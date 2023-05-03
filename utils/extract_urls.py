@@ -17,18 +17,6 @@ filename = '../data/urls/starfinder.txt'
 # Set of already checked URLs to avoid duplicates
 checked_urls = set()
 
-def extract_params(url):
-    """Extracts all possible paths, queries, and params from a URL."""
-    parsed_url = urlparse(url)
-    paths = parsed_url.path.strip('/').split('/')
-    queries = parse_qs(parsed_url.query)
-    params = set()
-    for path in paths:
-        params.add(path)
-        for query, values in queries.items():
-            params.add('{}={}'.format(query, values[0]))
-    return params
-
 def check_links(url):
     """Recursively checks all links on a given URL with the same domain."""
     global checked_urls
