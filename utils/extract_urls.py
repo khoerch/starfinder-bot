@@ -10,24 +10,27 @@ For questions or clarifications, always best to contact the website owners direc
 'https://www.aonsrd.com/ContactUs.aspx'
 """
 
-# URL of the main site to scrape
 main_url = 'https://www.aonsrd.com/'
 filename = '../data/urls/starfinder.txt'
 
 # Set of already checked URLs to avoid duplicates
 checked_urls = set()
+failed_urls = set()
+with open(filename, 'r') as f:
+    lines = f.read().splitlines()
+    checked_urls.update(lines)
 
 def check_links(url):
-    """Recursively checks all links on a given URL with the same domain."""
+    """Recursively checks all links on a given URL within the same domain."""
     global checked_urls
-    # Make a GET request to the URL and get the HTML content
     response = requests.get(url)
     html_content = response.content
-    # Parse the HTML content using BeautifulSoup
+
+    # Parse the HTML content using BeautifulSoup and find all links
     soup = BeautifulSoup(html_content, 'html.parser')
-    # Find all the links on the page
     links = soup.find_all('a')
-    # Check each link on the page and append urls to txt file
+
+    # Check each link on the page and append urls to file
     with open(filename, 'a') as f:
         for link in links:
             href = link.get('href')
@@ -37,19 +40,21 @@ def check_links(url):
                 # Parse the absolute URL to check if it belongs to the same domain
                 parsed_url = urlparse(abs_url)
                 if parsed_url.netloc == urlparse(main_url).netloc:
-                    # Check if the absolute URL has already been checked to avoid duplicates
                     if abs_url not in checked_urls:
-                        # Add the absolute URL to the set of checked URLs and append to file
                         checked_urls.add(abs_url)
                         f.write(abs_url + '\n')
-                        # Print the absolute URL
                         print(abs_url)
-                        # Recursively check all links on the absolute URL
-                        check_links(abs_url)
+                        # Recursively try to check all links on the absolute URL
+                        try:
+                            check_links(abs_url)
+                        except:
+                            failed_urls.add(abs_url)
+
 
 # Check all links on the main site
 check_links(main_url)
 
 print('')
 print('---')
+print(failed_urls)
 print('Finished!!')
